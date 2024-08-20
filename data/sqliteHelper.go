@@ -1,4 +1,4 @@
-﻿package data
+package data
 
 import (
 	"database/sql"
@@ -8,19 +8,30 @@ import (
 )
 
 type RosterMember struct {
-	name   string
-	class  string
-	isMain bool
+	Name   string `json:"name"`
+	Class  string `json:"class"`
+	IsMain bool   `json:"isMain"`
 }
 
-func QueryRosterClass(db *sql.DB, class string) ([]RosterMember, error) {
+var db *sql.DB
+
+func InitializeDbConnection() error {
+	var err error
+	db, err = sql.Open("sqlite", "data/roster.sqlite")
+	if err != nil {
+		return err
+	}
+	return db.Ping()
+}
+
+func QueryRosterClass(class string) ([]RosterMember, error) {
 	var results []RosterMember
 	dbStatus := db.Ping()
 	if dbStatus != nil {
-		return results, dbStatus
+		return nil, dbStatus
 	}
 
-	queryResult, err := db.Query("SELECT * FROM roster WHERE class = ?", class)
+	queryResult, err := db.Query("SELECT * FROM roster WHERE upper(class) = upper(?)", class)
 	if err != nil {
 		return results, err
 	}
@@ -30,7 +41,7 @@ func QueryRosterClass(db *sql.DB, class string) ([]RosterMember, error) {
 	} else {
 		for queryResult.Next() {
 			member := RosterMember{}
-			err := queryResult.Scan(&member.name, &member.class, &member.isMain)
+			err := queryResult.Scan(&member.Name, &member.Class, &member.IsMain)
 			if err != nil {
 				return results, err
 			}
@@ -40,7 +51,7 @@ func QueryRosterClass(db *sql.DB, class string) ([]RosterMember, error) {
 	}
 }
 
-func QueryRosterName(db *sql.DB, names []string) ([]RosterMember, error) {
+func QueryRosterName(names []string) ([]RosterMember, error) {
 	var results []RosterMember
 	dbStatus := db.Ping()
 	if dbStatus != nil {
@@ -69,7 +80,7 @@ func QueryRosterName(db *sql.DB, names []string) ([]RosterMember, error) {
 	} else {
 		for queryResult.Next() {
 			member := RosterMember{}
-			err := queryResult.Scan(&member.name, &member.class, &member.isMain)
+			err := queryResult.Scan(&member.Name, &member.Class, &member.IsMain)
 			if err != nil {
 				fmt.Println(err)
 			}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"goloot/data"
 	"goloot/src/handlers"
@@ -10,36 +9,15 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("sqlite", "data/roster.sqlite")
+	err := data.InitializeDbConnection()
 	if err != nil {
-		return
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return
-	}
-	defer db.Close()
-
-	classTest, err := data.QueryRosterClass(db, "Warrior")
-	if err != nil {
-		fmt.Print("queryRosterClass: ")
 		fmt.Println(err)
+		return
 	} else {
-		fmt.Println("Class query test:")
-		fmt.Println(classTest)
+		fmt.Println("Connected to database")
 	}
 
-	names := []string{"Anthalon", "Ynystere"}
-	nameTest, err := data.QueryRosterName(db, names)
-	if err != nil {
-		fmt.Print("queryRosterName: ")
-		fmt.Println(err)
-	} else {
-		fmt.Println("Name query test:")
-		fmt.Println(nameTest)
-	}
-
-	http.HandleFunc("/classes", handlers.ClassesHandler)
+	http.HandleFunc("/class", handlers.ClassHandler)
+	http.HandleFunc("/name", handlers.NameHandler)
 	http.ListenAndServe(":5050", nil)
 }
